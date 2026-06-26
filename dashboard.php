@@ -180,18 +180,24 @@ if($data_terbaru) {
 </style>
 
 <div class="p-3">
-    <div class="d-flex justify-content-between align-items-start mb-2">
-        <div>
-            <h1 class="text-white fw-bold m-0 h3">Dashboard</h1>
-            <p class="text-secondary small mt-1 mb-0">Selamat datang di <strong class="text-primary">UT Bookstore</strong></p>
+    <div class="d-flex justify-content-between align-items-start mb-2 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <!-- <button class="burger-btn" id="burgerToggleDashboard" style="background: #1e293b; color: #3b82f6; border: 1px solid #334155; padding: 10px 14px; border-radius: 8px; cursor: pointer; box-shadow: 0 0 10px rgba(59, 130, 246, 0.1); transition: background 0.2s;">
+                <i class="fas fa-bars"></i>
+            </button> -->
+            <div>
+                <h1 class="text-white fw-bold m-0 h3">Dashboard</h1>
+                <p class="text-secondary small mt-1 mb-0">Selamat datang di <strong class="text-primary">UT Bookstore</strong></p>
+            </div>
         </div>
-        <div class="badge border border-primary px-3 py-2 rounded-pill text-white" style="background-color: #1e293b;">
+        <div class="badge border border-primary px-3 py-2 rounded-pill text-white" style="background-color: #1e293b; white-space: nowrap;">
             <i class="fas fa-user text-primary me-1"></i> Client Mode
         </div>
     </div>
     
     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 mb-2 mt-18">
         <div class="col">
+            <a href="dashboard_user.php?page=katalog" class="text-decoration-none">
             <div class="card hover-stat border-secondary p-3 h-100 d-flex flex-row align-items-center gap-3" style="background-color: #1e293b; border-radius: 12px;">
                 <div class="p-3 rounded-3 text-primary" style="background-color: rgba(59, 130, 246, 0.15);">
                     <i class="fas fa-book fa-2x"></i>
@@ -201,9 +207,11 @@ if($data_terbaru) {
                     <p class="text-secondary small m-0" style="font-size: 0.75rem;">Total Buku Tersedia</p>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="col">
+            <a href="dashboard_user.php?page=pemesanan" class="text-decoration-none">
             <div class="card hover-stat border-secondary p-3 h-100 d-flex flex-row align-items-center gap-3" style="background-color: #1e293b; border-radius: 12px;">
                 <div class="p-3 rounded-3 text-success" style="background-color: rgba(16, 185, 129, 0.15);">
                     <i class="fas fa-shopping-bag fa-2x"></i>
@@ -213,9 +221,11 @@ if($data_terbaru) {
                     <p class="text-secondary small m-0" style="font-size: 0.75rem;">Total Pesanan Saya</p>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="col">
+            <a href="dashboard_user.php?page=topup" class="text-decoration-none">
             <div class="card hover-stat border-secondary p-3 h-100 d-flex flex-row align-items-center gap-3" style="background-color: #1e293b; border-radius: 12px;">
                 <div class="p-3 rounded-3 text-warning" style="background-color: rgba(245, 158, 11, 0.15);">
                     <i class="fas fa-wallet fa-2x"></i>
@@ -225,9 +235,11 @@ if($data_terbaru) {
                     <p class="text-secondary small m-0" style="font-size: 0.75rem;">Saldo Digital</p>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="col">
+            <a href="#" class="text-decoration-none">
             <div class="card hover-stat border-secondary p-3 h-100 d-flex flex-row align-items-center gap-3" style="background-color: #1e293b; border-radius: 12px;">
                 <div class="p-3 rounded-3 text-info" style="background-color: rgba(139, 92, 246, 0.15);">
                     <i class="fas fa-hand-holding-usd fa-2x"></i>
@@ -237,6 +249,7 @@ if($data_terbaru) {
                     <p class="text-secondary small m-0" style="font-size: 0.75rem;">Total Pengeluaran</p>
                 </div>
             </div>
+            </a>
         </div>
     </div>
 
@@ -417,5 +430,19 @@ function bukaKatalogPopup(id) {
 function tutupKatalogPopup(id) {
     var pop = document.getElementById('katalogPop' + id);
     if(pop) { pop.style.display = 'none'; }
+}
+
+// SCRIPT KHUSUS UNTUK BURGER BUTTON DI DASHBOARD INI
+const burgerToggleDashboard = document.getElementById('burgerToggleDashboard');
+if(burgerToggleDashboard) {
+    burgerToggleDashboard.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const sidebar = document.querySelector('.sidebar');
+        if (window.innerWidth > 992) {
+            document.body.classList.toggle('sidebar-hidden');
+        } else {
+            if(sidebar) sidebar.classList.toggle('active');
+        }
+    });
 }
 </script>

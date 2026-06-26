@@ -75,7 +75,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 $keyword = isset($_GET['cari']) ? $_GET['cari'] : '';
 $genre_filter = isset($_GET['genre']) ? $_GET['genre'] : '';
 
-// Bangun Query Dinamis Berdasarkan Pencarian dan Kategori
+// Bangun Query Dinamis Berdasarkan Pencarian dan Kategori (Server Side tetap aktif untuk validasi/refresh)
 if (!empty($genre_filter) && !empty($keyword)) {
     $stmt = $conn->prepare("SELECT * FROM books WHERE (judul LIKE ? OR penulis LIKE ?) AND kategori = ? ORDER BY id DESC");
     $search_param = "%$keyword%";
@@ -108,332 +108,114 @@ $buku = $stmt->get_result();
         body {
             background-color: #0f172a !important;
             color: #f8fafc !important;
+            overflow-x: hidden;
         }
 
+        /* --- STYLING SIDEBAR & RESPONSIVE BURGER MENU --- */
         .sidebar {
             padding: 25px 15px !important; 
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            position: fixed;
-            left: 0; top: 0;
-            width: 250px;
-            background-color: #1e293b;
-            z-index: 100;
+            display: flex; flex-direction: column; height: 100vh;
+            position: fixed; left: 0; top: 0; width: 250px;
+            background-color: #1e293b; z-index: 1040; transition: left 0.3s ease;
         }
+        .sidebar h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0; padding-left: 10px; }
 
-        .sidebar h2 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            padding-left: 10px;
-        }
-
-        .nav-menu {
-            list-style: none !important;
-            padding-left: 0 !important; 
-            margin-left: 0 !important;
-            margin-top: 15px !important;
-        }
-
-        .nav-menu li {
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
+        .nav-menu { list-style: none !important; padding-left: 0 !important; margin-left: 0 !important; margin-top: 15px !important; }
+        .nav-menu li { margin-bottom: 12px; width: 100%; }
         .nav-menu li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: #94a3b8;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s;
-            font-weight: 500;
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+            color: #94a3b8; text-decoration: none; border-radius: 8px;
+            transition: all 0.3s; font-weight: 500;
+        }
+        .nav-menu li a:hover, .nav-menu li a.active { background-color: #3b82f6 !important; color: white !important; }
+
+        .main-content { margin-left: 270px; padding: 20px; transition: margin-left 0.3s ease; }
+
+        body.sidebar-hidden .sidebar { left: -250px; }
+        body.sidebar-hidden .main-content { margin-left: 20px; }
+
+        .burger-btn {
+            display: block; background: #1e293b; color: #3b82f6;
+            border: 1px solid #334155; padding: 10px 14px;
+            border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.1); transition: background 0.2s;
+        }
+        .burger-btn:hover { background: #243147; }
+        .close-sidebar-btn { display: none; background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -250px; }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0 !important; padding: 15px; }
+            body.sidebar-hidden .main-content { margin-left: 0; }
+            .close-sidebar-btn { display: block; }
+            .header-search { width: 100%; margin-bottom: 15px; }
+            .header-search form input { width: 100% !important; max-width: 100%; }
+            header { flex-direction: column; align-items: flex-start !important; }
         }
 
-        .nav-menu li a:hover, .nav-menu li a.active {
-            background-color: #3b82f6 !important;
-            color: white !important;
-        }
-
-        /* Styling Dropdown Kategori agar Senada dengan Tema Dark */
+        /* Dropdown Kategori */
         .dropdown-kategori-btn {
-            background-color: #1e293b !important;
-            color: #f8fafc !important;
-            border: 1px solid #334155 !important;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
+            background-color: #1e293b !important; color: #f8fafc !important;
+            border: 1px solid #334155 !important; padding: 10px 16px;
+            border-radius: 8px; font-weight: 500; font-size: 0.9rem; transition: all 0.2s ease;
         }
+        .dropdown-kategori-btn:hover, .dropdown-kategori-btn:focus { border-color: #3b82f6 !important; background-color: #243249 !important; color: white !important; }
+        .dropdown-menu-dark-custom { background-color: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px; padding: 6px; }
+        .dropdown-menu-dark-custom .dropdown-item { color: #cbd5e1 !important; padding: 10px 16px; border-radius: 6px; transition: all 0.2s; }
+        .dropdown-menu-dark-custom .dropdown-item:hover, .dropdown-menu-dark-custom .dropdown-item.active { background-color: #3b82f6 !important; color: white !important; }
 
-        .dropdown-kategori-btn:hover, .dropdown-kategori-btn:focus {
-            border-color: #3b82f6 !important;
-            background-color: #243249 !important;
-            color: white !important;
-        }
-
-        .dropdown-menu-dark-custom {
-            background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            padding: 6px;
-        }
-
-        .dropdown-menu-dark-custom .dropdown-item {
-            color: #cbd5e1 !important;
-            padding: 10px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-
-        .dropdown-menu-dark-custom .dropdown-item:hover, 
-        .dropdown-menu-dark-custom .dropdown-item.active {
-            background-color: #3b82f6 !important;
-            color: white !important;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(8px);
-            justify-content: center;
-            align-items: center;
-        }
-
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); justify-content: center; align-items: center; }
         .modal-content {
-            background-color: #1e293b !important; 
-            color: #f8fafc !important;
-            margin: 0 auto !important; 
-            padding: 35px; 
-            border: 1px solid #3b82f6;
-            width: 90% !important; 
-            max-width: 950px !important; 
-            border-radius: 20px;
-            display: flex !important;
-            flex-direction: row !important; 
-            gap: 35px;
-            position: relative;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
-            animation: slideUp 0.4s ease;
+            background-color: #1e293b !important; color: #f8fafc !important; margin: 0 auto !important; 
+            padding: 35px; border: 1px solid #3b82f6; width: 90% !important; max-width: 950px !important; 
+            border-radius: 20px; display: flex !important; flex-direction: row !important; gap: 35px;
+            position: relative; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); animation: slideUp 0.4s ease;
         }
-
-        .modal-checkout-content {
-            max-width: 520px !important;
-            flex-direction: column !important;
-            gap: 15px;
-            padding: 2.5rem;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding-right: 2rem; 
-            scrollbar-width: thin; 
-            scrollbar-color: #3b82f6 transparent; 
-        }
-
-        .modal-checkout-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .modal-checkout-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .modal-checkout-content::-webkit-scrollbar-thumb {
-            background: #3b82f6;
-            border-radius: 10px;
-        }
-        .modal-checkout-content::-webkit-scrollbar-thumb:hover {
-            background: #2563eb;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .close-modal {
-            position: absolute;
-            right: 20px; top: 15px;
-            color: #94a3b8;
-            font-size: 30px;
-            cursor: pointer;
-            transition: 0.3s;
-            z-index: 10;
-        }
-
+        .modal-checkout-content { max-width: 520px !important; flex-direction: column !important; gap: 15px; padding: 2.5rem; max-height: 85vh; overflow-y: auto; padding-right: 2rem; scrollbar-width: thin; scrollbar-color: #3b82f6 transparent; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        .close-modal { position: absolute; right: 20px; top: 15px; color: #94a3b8; font-size: 30px; cursor: pointer; transition: 0.3s; z-index: 10; }
         .close-modal:hover { color: #ef4444; }
 
-        .modal-left { 
-            flex: 1 !important; 
-            text-align: center; 
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-left img {
-            width: 100%;
-            max-width: 260px; 
-            border-radius: 12px;
-            border: 3px solid #334155;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            object-fit: cover;
-        }
-
-        .modal-right { 
-            flex: 2 !important; 
-            color: white !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
+        .modal-left { flex: 1 !important; text-align: center; display: flex !important; align-items: center; justify-content: center; }
+        .modal-left img { width: 100%; max-width: 260px; border-radius: 12px; border: 3px solid #334155; box-shadow: 0 10px 20px rgba(0,0,0,0.5); object-fit: cover; }
+        .modal-right { flex: 2 !important; color: white !important; display: flex !important; flex-direction: column !important; }
         .modal-right h2 { color: #3b82f6; margin-top: 10px; margin-bottom: 5px; font-size: 1.9rem; }
         .modal-right .author { color: #94a3b8; margin-bottom: 15px; font-style: italic; }
-        
-        .modal-right .desc {
-            line-height: 1.6;
-            color: #cbd5e1;
-            max-height: 180px; 
-            overflow-y: auto; 
-            padding-right: 15px; 
-            margin-bottom: 20px;
-            scrollbar-width: thin;
-            scrollbar-color: #3b82f6 transparent;
-        }
+        .modal-right .desc { line-height: 1.6; color: #cbd5e1; max-height: 180px; overflow-y: auto; padding-right: 15px; margin-bottom: 20px; scrollbar-width: thin; scrollbar-color: #3b82f6 transparent; }
 
-        .modal-right .desc::-webkit-scrollbar {
-            width: 6px;
-        }
-        .modal-right .desc::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .modal-right .desc::-webkit-scrollbar-thumb {
-            background: #3b82f6;
-            border-radius: 10px;
-        }
-        .modal-right .desc::-webkit-scrollbar-thumb:hover {
-            background: #2563eb;
-        }
+        .book-card-img-wrapper { width: 100%; aspect-ratio: 3 / 4; overflow: hidden; border-top-left-radius: 8px; border-top-right-radius: 8px; background-color: #1e293b; display: flex; align-items: center; justify-content: center; }
+        .book-card-img-wrapper img { width: 100%; height: 100%; object-fit: fill; }
+        .book-checkout-detail { display: flex; gap: 20px; background: #0f172a; padding: 15px; border-radius: 14px; border: 1px solid #334155; align-items: center; }
+        .book-checkout-detail img { width: 85px; height: 120px; object-fit: cover; border-radius: 8px; }
 
-        .book-card-img-wrapper {
-            width: 100%;
-            aspect-ratio: 3 / 4; 
-            overflow: hidden;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            background-color: #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .form-select, .form-select option, .form-control { background-color: #0f172a !important; color: #f8fafc !important; border: 1px solid #334155 !important; border-radius: 8px; padding: 12px; }
+        .form-control:focus { border-color: #3b82f6 !important; box-shadow: none; }
+        .form-control::placeholder { color: #64748b !important; }
 
-        .book-card-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: fill; 
-        }
-
-        .book-checkout-detail {
-            display: flex;
-            gap: 20px;
-            background: #0f172a;
-            padding: 15px;
-            border-radius: 14px;
-            border: 1px solid #334155;
-            align-items: center;
-        }
-        .book-checkout-detail img {
-            width: 85px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .form-select, .form-select option, .form-control {
-            background-color: #0f172a !important;
-            color: #f8fafc !important; 
-            border: 1px solid #334155 !important;
-            border-radius: 8px;
-            padding: 12px;
-        }
-        .form-control:focus {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-            border-color: #3b82f6 !important;
-            box-shadow: none;
-        }
-        .form-control::placeholder {
-            color: #64748b !important;
-        }
-
-        .card, .stat-card {
-            transition: transform 0.3s ease !important;
-        }
-
-        .card:hover, .stat-card:hover {
-            transform: translateY(-5px) !important;
-        }
-
-        .book-card {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background-color: #1e293b;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            overflow: hidden;
-            transition: transform 0.3s;
-        }
-
-        .book-info {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            padding: 15px; 
-        }
-
-        .book-info .price {
-            margin-top: auto;
-            margin-bottom: 10px;
-            display: block;
-        }
+        .card, .stat-card { transition: transform 0.3s ease !important; }
+        .card:hover, .stat-card:hover { transform: translateY(-5px) !important; }
+        .book-card { display: flex; flex-direction: column; height: 100%; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155; overflow: hidden; transition: transform 0.3s; cursor: pointer; }
+        .book-info { display: flex; flex-direction: column; flex-grow: 1; padding: 15px; }
+        .book-info .price { margin-top: auto; margin-bottom: 10px; display: block; color: #3b82f6; font-weight: bold; font-size: 1.1rem; }
 
         .btn-beli {
-            display: block;
-            text-align: center;
-            background: linear-gradient(135deg, #3b82f6, #2563eb) !important; 
-            color: white !important;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-top: 5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-            border: 1px solid #60a5fa !important;
-            cursor: pointer;
+            display: block; text-align: center; background: linear-gradient(135deg, #3b82f6, #2563eb) !important; 
+            color: white !important; text-decoration: none; padding: 10px 15px; border-radius: 8px;
+            font-size: 0.95rem; font-weight: 600; margin-top: 5px; transition: all 0.3s ease; cursor: pointer;
         }
-
-        .btn-beli:hover {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; 
-            transform: translateY(-3px); 
-            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.5); 
-            color: white !important;
-        }
-        
-        .btn-beli i { margin-right: 5px; }
+        .btn-beli:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.5); }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2><i class="fas fa-book-open"></i> UT BookStore</h2>
-    <hr style="height:1px; border:none; background:#94a3b8; width:100%; margin: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <h2><i class="fas fa-book-open text-primary"></i> UT BookStore</h2>
+        <button id="closeSidebar" class="close-sidebar-btn"><i class="fas fa-times"></i></button>
+    </div>
+    <hr style="height:1px; border:none; background:#94a3b8; width:100%; margin: 15px 0 10px 0;">
 
     <ul class="nav-menu">
         <li>
@@ -465,7 +247,26 @@ $buku = $stmt->get_result();
     </div>
 </div>
 
-<div class="main-content" style="margin-left: 270px; padding: 20px;">
+<div class="main-content">
+    
+    <div class="d-flex align-items-center mb-4">
+        <button class="burger-btn me-3" id="burgerToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <?php if ($page == 'dashboard'): ?>
+            <h4 class="m-0 text-white fw-bold d-none d-md-block">UT BookStore</h4>
+        <?php endif; ?>
+        <?php if ($page == 'katalog'): ?>
+            <h4 class="m-0 text-white fw-bold d-none d-md-block">Katalog Buku</h4>
+        <?php endif; ?>
+        <?php if ($page == 'pemesanan'): ?>
+            <h4 class="m-0 text-white fw-bold d-none d-md-block">Pemesanan</h4>
+        <?php endif; ?>
+        <?php if ($page == 'topup'): ?>
+            <h4 class="m-0 text-white fw-bold d-none d-md-block">Saldo Anda</h4>
+        <?php endif; ?>
+    </div>
+
     <?php if ($page == 'dashboard'): ?>
         <div class="container-fluid p-0">
             <?php include 'dashboard.php'; ?>
@@ -479,14 +280,15 @@ $buku = $stmt->get_result();
             <?php include 'konten_topup.php'; ?>
         </div>
     <?php else: ?>
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
             <div class="header-search">
                 <form method="GET" style="display: flex; align-items: center; background: #1e293b; border-radius: 8px; padding: 5px 15px; border: 1px solid #334155;">
                     <input type="hidden" name="page" value="katalog">
                     <input type="hidden" name="genre" value="<?= htmlspecialchars($genre_filter) ?>">
                     <i class="fas fa-search" style="color: #94a3b8;"></i>
-                    <input type="text" name="cari" placeholder="Cari judul atau penulis..."
-                           value="<?= htmlspecialchars($keyword) ?>"
+                    
+                    <input type="text" name="cari" id="searchInput" placeholder="Cari judul atau penulis..."
+                           value="<?= htmlspecialchars($keyword) ?>" autocomplete="off"
                            style="background: transparent; border: none; color: white; padding: 10px; outline: none; width: 300px;">
                     <button type="submit" style="display: none;">Cari</button>
                 </form>
@@ -504,8 +306,6 @@ $buku = $stmt->get_result();
         <section>
             <div class="row align-items-end mb-4 g-3">
                 <div class="col-12 col-md-auto me-auto">
-                    
-                    
                     <div class="dropdown">
                         <button class="btn dropdown-kategori-btn dropdown-toggle d-flex align-items-center gap-2" type="button" id="dropdownGenre" data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 190px; justify-content: space-between;">
                             <span>
@@ -534,9 +334,6 @@ $buku = $stmt->get_result();
                         </ul>
                     </div>
                 </div>
-                
-                <div class="col-auto d-none d-md-block">
-                     </div>
             </div>
 
             <div class="book-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px;">
@@ -550,8 +347,7 @@ $buku = $stmt->get_result();
                          data-deskripsi="<?= htmlspecialchars($row['deskripsi']) ?>"
                          data-gambar="img/<?= $row['gambar'] ?>"
                          data-harga="Rp <?= number_format($row['harga'], 0, ',', '.') ?>"
-                         data-hargasingle="<?= $row['harga'] ?>"
-                         style="cursor: pointer;">
+                         data-hargasingle="<?= $row['harga'] ?>">
                         
                         <div class="book-card-img-wrapper" style="position: relative;">
                             <img src="img/<?= $row['gambar'] ?>" alt="<?= htmlspecialchars($row['judul']) ?>">
@@ -567,7 +363,7 @@ $buku = $stmt->get_result();
                             <h4 style="color: white; margin-top: 0; margin-bottom: 5px; font-size: 1.05rem; font-weight: 600;" class="text-truncate"><?= htmlspecialchars($row['judul']) ?></h4>
                             <p class="author text-truncate" style="color: #94a3b8; font-size: 0.85rem; margin-top: 0; margin-bottom: 15px; font-style: italic;"><?= htmlspecialchars($row['penulis']) ?></p>
                             
-                            <span class="price" style="color: #3b82f6; font-weight: bold; font-size: 1.1rem;">Rp <?= number_format($row['harga'], 0, ',', '.') ?></span>
+                            <span class="price">Rp <?= number_format($row['harga'], 0, ',', '.') ?></span>
                             
                             <button class="btn-beli btn-action-beli w-100 border-0 mt-2">
                                 <i class="fas fa-cart-plus"></i> Beli Sekarang
@@ -575,6 +371,12 @@ $buku = $stmt->get_result();
                         </div>
                     </div>
                     <?php endwhile; ?>
+
+                    <div id="noResultsMsg" style="display: none; grid-column: 1 / -1; text-align: center; padding: 3rem; color: #94a3b8;">
+                        <i class="fas fa-search-minus fa-3x" style="margin-bottom: 1rem;"></i>
+                        <p>Buku dengan judul atau penulis tersebut tidak ditemukan.</p>
+                    </div>
+
                 <?php else: ?>
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #94a3b8;">
                         <i class="fas fa-search fa-3x" style="margin-bottom: 1rem;"></i>
@@ -684,12 +486,76 @@ $buku = $stmt->get_result();
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+// --- LOGIKA REAL-TIME SEARCH PADA HALAMAN KATALOG ---
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase();
+        const bookCards = document.querySelectorAll('.card-item-buku');
+        let foundCount = 0;
+        
+        bookCards.forEach(card => {
+            // Mengambil judul dan penulis dari atribut data
+            const judul = card.getAttribute('data-judul').toLowerCase();
+            const penulis = card.getAttribute('data-penulis').toLowerCase();
+            
+            // Cocokkan keyword dengan judul atau penulis
+            if (judul.includes(keyword) || penulis.includes(keyword)) {
+                card.style.display = 'flex'; // Menampilkan card
+                foundCount++;
+            } else {
+                card.style.display = 'none'; // Menyembunyikan card
+            }
+        });
+
+        // Logika menampilkan atau menyembunyikan pesan "Tidak Ditemukan"
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        if (noResultsMsg) {
+            if (foundCount === 0 && bookCards.length > 0) {
+                noResultsMsg.style.display = 'block';
+            } else {
+                noResultsMsg.style.display = 'none';
+            }
+        }
+    });
+}
+
+// --- LOGIKA BURGER MENU & RESPONSIVE SIDEBAR ---
+const burgerToggle = document.getElementById('burgerToggle');
+const closeSidebar = document.getElementById('closeSidebar');
+const sidebar = document.querySelector('.sidebar');
+
+if(burgerToggle) {
+    burgerToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.innerWidth > 992) {
+            document.body.classList.toggle('sidebar-hidden');
+        } else {
+            sidebar.classList.toggle('active');
+        }
+    });
+}
+
+if(closeSidebar) {
+    closeSidebar.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+    });
+}
+
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 992) {
+        if (!sidebar.contains(e.target) && burgerToggle && !burgerToggle.contains(e.target)) {
+            sidebar.classList.remove('active');
+        }
+    }
+});
+
+
+// --- LOGIKA MODAL BUKU & CHECKOUT ---
 let activeBook = {};
 let currentHargaRaw = 0; 
 
-function lockScroll() {
-    document.body.style.overflow = 'hidden';
-}
+function lockScroll() { document.body.style.overflow = 'hidden'; }
 
 function unlockScroll() {
     let bModal = document.getElementById('bookModal');
